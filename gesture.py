@@ -93,7 +93,7 @@ while cap.isOpened():
     # Display the resulting frame
     cv2.imshow('Gesture Controlled PowerPoint', image)
 
-    # Exit condition
+   
     if cv2.waitKey(5) & 0xFF == 27:  # Press 'Esc' to exit
         break
 
@@ -103,3 +103,4 @@ cv2.destroyAllWindows()
 hands.close()
 
 print("Script finished.")
+
