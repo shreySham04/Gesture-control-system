@@ -131,3 +131,5 @@ hands.close()
 
 print("Script finished.")
 
+# .\venv\Scripts\activate ---> use this command in powershell to activate your script
+ 
