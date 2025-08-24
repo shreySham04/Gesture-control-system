@@ -1,4 +1,4 @@
-# gesture_controlled_powerpoint.py
+# gesture_controlled_powerpoint_extended.py
 
 import cv2
 import mediapipe as mp
@@ -21,7 +21,7 @@ cooldown_period = 1.5  # seconds
 last_action_time = 0
 
 print("Starting Gesture Controlled PowerPoint...")
-print("Show one finger for 'Next Slide', two fingers for 'Previous Slide'.")
+print("Commands: Fist (End), 1 (Next), 2 (Prev), 3 (Start), 4 (Blank), 5 (First Slide)")
 
 while cap.isOpened():
     success, image = cap.read()
@@ -29,12 +29,11 @@ while cap.isOpened():
         print("Ignoring empty camera frame.")
         continue
 
-    # Flip the image horizontally for a later selfie-view display
+    # Flip the image horizontally for a selfie-view display
     # and convert the BGR image to RGB.
     image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
     
-    # To improve performance, optionally mark the image as not writeable to
-    # pass by reference.
+    # To improve performance, optionally mark the image as not writeable
     image.flags.writeable = False
     results = hands.process(image)
 
@@ -58,17 +57,15 @@ while cap.isOpened():
     if len(lm_list) != 0:
         fingers = []
 
-        # Thumb (special case)
-        # Check if the thumb tip is to the left (for right hand) or right (for left hand) 
-        # of the landmark below it. This helps determine if the thumb is open.
+        # Thumb (special case: checks horizontal position relative to wrist)
+        # This logic is for a right hand in a mirror view.
         if lm_list[tip_ids[0]][1] > lm_list[tip_ids[0] - 1][1]:
             fingers.append(1)
         else:
             fingers.append(0)
 
-        # Other four fingers
+        # Other four fingers (checks vertical position)
         for id in range(1, 5):
-            # Check if the finger tip is above the joint below it
             if lm_list[tip_ids[id]][2] < lm_list[tip_ids[id] - 2][2]:
                 fingers.append(1)
             else:
@@ -79,21 +76,51 @@ while cap.isOpened():
         # Check for cooldown
         current_time = time.time()
         if current_time - last_action_time > cooldown_period:
+            
+            # --- ACTION BLOCK ---
             # Perform actions based on the number of fingers
-            if total_fingers == 1:
+            
+            # 0 Fingers (Closed Fist) -> End Slideshow
+            if total_fingers == 0:
+                print("Action: End Slideshow (Fist)")
+                pyautogui.press('escape')
+                last_action_time = current_time
+
+            # 1 Finger -> Next Slide
+            elif total_fingers == 1:
                 print("Action: Next Slide (1 Finger)")
                 pyautogui.press('right')
                 last_action_time = current_time
 
+            # 2 Fingers -> Previous Slide
             elif total_fingers == 2:
                 print("Action: Previous Slide (2 Fingers)")
                 pyautogui.press('left')
                 last_action_time = current_time
+            
+            # 3 Fingers -> Start/Resume Slideshow
+            elif total_fingers == 3:
+                print("Action: Start Slideshow (3 Fingers)")
+                pyautogui.press('f5')
+                last_action_time = current_time
+
+            # 4 Fingers -> Blank/Unblank Screen
+            elif total_fingers == 4:
+                print("Action: Blank Screen (4 Fingers)")
+                pyautogui.press('b')
+                last_action_time = current_time
+            
+            # 5 Fingers (Open Hand) -> Go to First Slide
+            elif total_fingers == 5:
+                print("Action: Go to First Slide (5 Fingers)")
+                pyautogui.press('home')
+                last_action_time = current_time
+
 
     # Display the resulting frame
     cv2.imshow('Gesture Controlled PowerPoint', image)
 
-   
+    # Exit condition
     if cv2.waitKey(5) & 0xFF == 27:  # Press 'Esc' to exit
         break
 
