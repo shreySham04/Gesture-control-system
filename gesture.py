@@ -131,5 +131,8 @@ hands.close()
 
 print("Script finished.")
 
-# .\venv\Scripts\activate ---> use this command in powershell to activate your script
- 
+#cd C:\Users\shrey\OneDrive\Documents\ppt-voice-controller
+
+#.\venv\Scripts\activate
+
+#Then run the script
